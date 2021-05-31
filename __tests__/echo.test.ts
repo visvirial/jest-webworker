@@ -1,5 +1,5 @@
 
-import EchoWorker from './echo.test.worker.ts';
+import EchoWorker from './echo.worker.ts';
 
 describe('EchoWorker (TypeScript)', () => {
 	it('can execute WebWorker', async () => {
