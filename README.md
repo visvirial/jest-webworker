@@ -3,9 +3,9 @@ jest-webworker: WebPack's "worker-loader"-compliant Jest transformer
 
 [![Node.js CI](https://github.com/visvirial/jest-webworker/actions/workflows/node.js.yml/badge.svg)](https://github.com/visvirial/jest-webworker/actions/workflows/node.js.yml)
 
-<div style="color:red">
+<span style="color:red">
 	⚠WARNING⚠: This package is currently experimental. Please avoid using it in production.
-</div>
+</span>
 
 A Jest transformer which can execute WebWorker codes that uses WebPack's
 [worker-loader](https://github.com/webpack-contrib/worker-loader).
