@@ -4,7 +4,9 @@
   "description": "WebPack's \"worker-loader\"-compliant Jest transformer",
   "main": "dist/index.js",
   "scripts": {
+    "prepack": "npm run clean && npm run build",
     "build": "tsc",
+    "clean": "rm -rf dist",
     "test": "jest"
   },
   "repository": {
