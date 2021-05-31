@@ -1,6 +1,6 @@
 
 import { readFileSync, writeFileSync, unlinkSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 
 import { Config } from '@jest/types';
 import { SyncTransformer, TransformOptions, TransformedSource } from '@jest/transform';
@@ -8,7 +8,8 @@ import tsJest from 'ts-jest';
 import { TsJestTransformer } from 'ts-jest/dist/ts-jest-transformer';
 
 const WORKER_CODE_PATTERN = '@@WORKER_CODE@@';
-const WORKER_FILENAME_PATTERN = '@@WORKER_URL@@';
+const WORKER_COMPILED_CODE_PATTERN = '@@WORKER_COMPILED_CODE@@';
+const WORKER_DIR_PATTERN = '@@WORKER_DIR@@';
 const WORKER_HEADER_PATTERN = '@@WORKER_HEADERS@@';
 const WORKER_SEPARATOR_PATTERN = '/* @@JEST_WEBWORKER_SEPARATOR@@ */';
 
@@ -47,7 +48,6 @@ export class WebWorkerTransformer implements SyncTransformer {
 		try {
 			const compiled = this.transformer.process(sourceText, filepathBase + '.ts', options);
 			const js = (typeof compiled === 'string' ? compiled : compiled.code);
-			writeFileSync(filepathBase + '.js', js);
 			return js;
 		} catch(e) {
 			throw e;
@@ -58,18 +58,17 @@ export class WebWorkerTransformer implements SyncTransformer {
 	process(sourceText: string, sourcePath: Config.Path, options: TransformOptions): TransformedSource {
 		const childPathBase = `${sourcePath.replace(/\.ts$/, '')}_child`;
 		const { header: sourceHeader, body: sourceBody } = splitSource(sourceText);
-		const childSrcTS = CHILD_SRC.replace(WORKER_HEADER_PATTERN, sourceHeader).replace(WORKER_CODE_PATTERN, sourceBody);
+		const childSrcTS = CHILD_SRC
+			.replace(WORKER_HEADER_PATTERN, sourceHeader)
+			.replace(WORKER_CODE_PATTERN, sourceBody);
 		const childSrc = this.compile(childSrcTS, childPathBase, options);
 		//console.log('childSrc:', childSrc);
 		const parentPathBase = `${sourcePath.replace(/\.ts$/, '')}_parent`;
-		const parentSrcTS = PARENT_SRC.replace(WORKER_FILENAME_PATTERN, childPathBase + '.js');
+		const parentSrcTS = PARENT_SRC
+			.replace(WORKER_DIR_PATTERN, dirname(sourcePath))
+			.replace(WORKER_COMPILED_CODE_PATTERN, Buffer.from(childSrc).toString('base64'));
 		const parentSrc = this.compile(parentSrcTS, parentPathBase, options);
 		//console.log('parentSrc:', parentSrc);
-		unlinkSync(parentPathBase + '.js');
-		const cleanUp = () => {
-			unlinkSync(childPathBase + '.js');
-		};
-		process.addListener('exit', cleanUp);
 		return parentSrc;
 	}
 }

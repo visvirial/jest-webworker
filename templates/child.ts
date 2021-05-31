@@ -1,7 +1,10 @@
 
+import { unlinkSync } from 'fs';
 import { TransferListItem, parentPort } from 'worker_threads';
 
 @@WORKER_HEADERS@@
+
+unlinkSync(__filename);
 
 export type ListenerFunction = (ev: { data: unknown }) => void;
 export type ListenerFunctionNode = (data: unknown) => void;
@@ -16,10 +19,6 @@ export class ListenerData {
 		};
 	}
 }
-
-parentPort!.addListener('message', (data) => {
-	console.log(data);
-});
 
 export default class ChildWorker {
 	private listeners: ListenerData[] = [];
@@ -51,7 +50,6 @@ export default class ChildWorker {
 @@WORKER_CODE@@
 		
 		this.addEventListener('message', (ev) => {
-			console.log(ev);
 			if(onmessage) {
 				onmessage(ev);
 			}
