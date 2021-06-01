@@ -27,11 +27,13 @@ export default class ChildWorker {
 	addEventListener(event: string, listener: ListenerFunction): EventEmitter {
 		const l = new ListenerData(listener);
 		this.listeners.push(l);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return parentPort!.addListener(event, l.listenerNode);
 	}
 	removeEventListener(event: string | symbol, listener: ListenerFunction): EventEmitter | null {
 		for(let i=0; i<this.listeners.length; i++) {
 			if(this.listeners[i].listener == listener) {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const ret = parentPort!.removeListener(event, this.listeners[i].listenerNode);
 				this.listeners.splice(i, 1);
 				return ret;
@@ -40,11 +42,15 @@ export default class ChildWorker {
 		return null;
 	}
 	postMessage(data: unknown, transfer?: TransferListItem[]): void {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		parentPort!.postMessage(data, transfer);
 	}
 	run(): void {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unused-vars
 		const self = this;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const postMessage = this.postMessage;
+		// eslint-disable-next-line prefer-const
 		let onmessage: ListenerFunction | null = null;
 		
 /* __WORKER_CODE__ */
