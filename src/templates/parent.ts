@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { writeFileSync, statSync } from 'fs';
 import { resolve } from 'path';
 import { randomBytes } from 'crypto';
-import { Worker } from 'worker_threads';
+import { Worker, TransferListItem } from 'worker_threads';
 
 export type ListenerFunction = (ev: { data: unknown }) => void;
 
@@ -50,8 +50,8 @@ export default class ParentWorker {
 			listener({ data });
 		});
 	}
-	postMessage(data: unknown): void {
-		this.worker.postMessage(data);
+	postMessage(data: unknown, transfer?: TransferListItem[]): void {
+		this.worker.postMessage(data, transfer);
 	}
 }
 
