@@ -51,8 +51,6 @@ export class WebWorkerTransformer implements SyncTransformer {
 		try {
 			const compiled = this.transformer.process(sourceText, filename, options);
 			return (typeof compiled === 'string' ? compiled : compiled.code);
-		} catch(e) {
-			throw e;
 		} finally {
 			unlinkSync(filename);
 		}
@@ -75,7 +73,6 @@ export class WebWorkerTransformer implements SyncTransformer {
 }
 
 export default {
-	createTransformer: () => new WebWorkerTransformer(),
-	process: () => null,
+	createTransformer: (): WebWorkerTransformer => new WebWorkerTransformer(),
 };
 

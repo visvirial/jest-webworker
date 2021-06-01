@@ -8,6 +8,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "clearCache": "jest --clearCache",
+    "lint": "eslint ./src",
     "test": "jest"
   },
   "repository": {
@@ -29,6 +30,9 @@
   "devDependencies": {
     "@jest/transform": "^27.0.1",
     "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "eslint": "^7.27.0",
     "jest": "^27.0.3",
     "ts-jest": "^27.0.1",
     "ts-node": "^10.0.0",

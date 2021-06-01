@@ -1,12 +1,13 @@
 
-import { writeFileSync, unlinkSync, statSync } from 'fs';
+import { EventEmitter } from 'events';
+import { writeFileSync, statSync } from 'fs';
 import { resolve } from 'path';
 import { randomBytes } from 'crypto';
 import { Worker } from 'worker_threads';
 
 export type ListenerFunction = (ev: { data: unknown }) => void;
 
-export const generateRandomFile = (dir: string, ext: string, filenameLen: number = 8): string => {
+export const generateRandomFile = (dir: string, ext: string, filenameLen = 8): string => {
 	const RANDOM_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 	for(;;) {
 		const rnd = randomBytes(filenameLen);
@@ -44,8 +45,8 @@ export default class ParentWorker {
 	onerror: ((error: Error) => void) | null = null;
 	onmessage: ListenerFunction | null = null;
 	onmessageerror: ((error: Error) => void) | null = null;
-	addEventListener(event: string, listener: ListenerFunction) {
-		this.worker.addListener(event, (data: unknown) => {
+	addEventListener(event: string, listener: ListenerFunction): EventEmitter {
+		return this.worker.addListener(event, (data: unknown) => {
 			listener({ data });
 		});
 	}

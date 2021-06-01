@@ -1,4 +1,5 @@
 
+import { EventEmitter } from 'events';
 import { unlinkSync } from 'fs';
 import { TransferListItem, parentPort } from 'worker_threads';
 
@@ -23,14 +24,12 @@ export class ListenerData {
 export default class ChildWorker {
 	private listeners: ListenerData[] = [];
 	onmessage: ListenerFunction | null = null;
-	constructor() {
-	}
-	addEventListener(event: string, listener: ListenerFunction) {
+	addEventListener(event: string, listener: ListenerFunction): EventEmitter {
 		const l = new ListenerData(listener);
 		this.listeners.push(l);
 		return parentPort!.addListener(event, l.listenerNode);
 	}
-	removeEventListener(event: string | symbol, listener: ListenerFunction) {
+	removeEventListener(event: string | symbol, listener: ListenerFunction): EventEmitter | null {
 		for(let i=0; i<this.listeners.length; i++) {
 			if(this.listeners[i].listener == listener) {
 				const ret = parentPort!.removeListener(event, this.listeners[i].listenerNode);
@@ -38,11 +37,12 @@ export default class ChildWorker {
 				return ret;
 			}
 		}
+		return null;
 	}
-	postMessage(data: unknown, transfer?: TransferListItem[]) {
-		return parentPort!.postMessage(data, transfer);
+	postMessage(data: unknown, transfer?: TransferListItem[]): void {
+		parentPort!.postMessage(data, transfer);
 	}
-	run() {
+	run(): void {
 		const self = this;
 		const postMessage = this.postMessage;
 		let onmessage: ListenerFunction | null = null;
