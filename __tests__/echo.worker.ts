@@ -1,5 +1,5 @@
 
-/* @@JEST_WEBWORKER_SEPARATOR@@ */
+/* __JEST_WEBWORKER_SEPARATOR__ */
 
 self.onmessage = (ev) => {
 	self.postMessage(ev.data);

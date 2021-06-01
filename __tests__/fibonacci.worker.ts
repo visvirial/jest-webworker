@@ -1,5 +1,5 @@
 
-/* @@JEST_WEBWORKER_SEPARATOR@@ */
+/* __JEST_WEBWORKER_SEPARATOR__ */
 
 const fibo = (n: number): number => {
 	if(n === 0) return 0;

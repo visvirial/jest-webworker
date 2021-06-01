@@ -30,7 +30,7 @@ import HogeWorker from './hoge.worker.ts';
 Note: please avoid using `worker-loader!` prefix since it cannot be recognized by Jest.
 1. Add the following comment between your `import` statements and source code body:
 ```ts
-/* @@JEST_WEBWORKER_SEPARATOR@@ */
+/* __JEST_WEBWORKER_SEPARATOR__ */
 ```
 1. Run jest and enjoy testing!
 

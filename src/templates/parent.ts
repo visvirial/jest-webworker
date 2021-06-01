@@ -1,32 +1,34 @@
 
 import { writeFileSync, unlinkSync, statSync } from 'fs';
+import { resolve } from 'path';
 import { randomBytes } from 'crypto';
 import { Worker } from 'worker_threads';
 
 export type ListenerFunction = (ev: { data: unknown }) => void;
 
-const DIRNAME = '@@WORKER_DIR@@';
+export const generateRandomFile = (dir: string, ext: string, filenameLen: number = 8): string => {
+	const RANDOM_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+	for(;;) {
+		const rnd = randomBytes(filenameLen);
+		let tmp = '__';
+		for(let i=0; i<filenameLen; i++) {
+			tmp += RANDOM_CHARS[rnd[i] % RANDOM_CHARS.length];
+		}
+		const tmpname = resolve(dir, tmp + '.' + ext);
+		try {
+			statSync(tmpname);
+		} catch(err) {
+			return tmpname;
+		}
+	}
+};
 
 export default class ParentWorker {
 	private worker: Worker;
 	constructor() {
-		let filename: string | null = null;
-		for(; filename===null;) {
-			const RANDOM_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-			const FILENAME_LENGTH = 8;
-			const rnd = randomBytes(FILENAME_LENGTH);
-			let tmp = '__';
-			for(let i=0; i<FILENAME_LENGTH; i++) {
-				tmp += RANDOM_CHARS[rnd[i] % RANDOM_CHARS.length];
-			}
-			let tmpname = DIRNAME + '/' + tmp + '.js';
-			try {
-				statSync(tmpname);
-			} catch(err) {
-				filename = tmpname;
-			}
-		}
-		writeFileSync(filename, Buffer.from('@@WORKER_COMPILED_CODE@@', 'base64'));
+		const DIRNAME = '__WORKER_DIR__';
+		const filename = generateRandomFile(DIRNAME, 'js');
+		writeFileSync(filename, Buffer.from('__WORKER_COMPILED_CODE__', 'base64'));
 		this.worker = new Worker(filename);
 		this.worker.on('error', (error) => {
 			if(this.onerror) this.onerror(error);

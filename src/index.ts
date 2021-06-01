@@ -7,15 +7,17 @@ import { SyncTransformer, TransformOptions, TransformedSource } from '@jest/tran
 import tsJest from 'ts-jest';
 import { TsJestTransformer } from 'ts-jest/dist/ts-jest-transformer';
 
-const WORKER_CODE_PATTERN = '@@WORKER_CODE@@';
-const WORKER_COMPILED_CODE_PATTERN = '@@WORKER_COMPILED_CODE@@';
-const WORKER_DIR_PATTERN = '@@WORKER_DIR@@';
-const WORKER_HEADER_PATTERN = '@@WORKER_HEADERS@@';
-const WORKER_SEPARATOR_PATTERN = '/* @@JEST_WEBWORKER_SEPARATOR@@ */';
+import { generateRandomFile } from './templates/parent';
 
-const PARENT_PATH = resolve(__dirname, '..', 'templates', 'parent.ts');
+const WORKER_CODE_PATTERN = '/* __WORKER_CODE__ */';
+const WORKER_COMPILED_CODE_PATTERN = '__WORKER_COMPILED_CODE__';
+const WORKER_DIR_PATTERN = '__WORKER_DIR__';
+const WORKER_HEADER_PATTERN = '/* __WORKER_HEADERS__ */';
+const WORKER_SEPARATOR_PATTERN = '/* __JEST_WEBWORKER_SEPARATOR__ */';
+
+const PARENT_PATH = resolve(__dirname, '..', 'src', 'templates', 'parent.ts');
 const PARENT_SRC = readFileSync(PARENT_PATH).toString('utf8');
-const CHILD_PATH = resolve(__dirname, '..', 'templates', 'child.ts');
+const CHILD_PATH = resolve(__dirname, '..', 'src', 'templates', 'child.ts');
 const CHILD_SRC = readFileSync(CHILD_PATH).toString('utf8');
 
 const splitSource = (src: string): { header: string, body: string } => {
@@ -43,31 +45,30 @@ const splitSource = (src: string): { header: string, body: string } => {
 export class WebWorkerTransformer implements SyncTransformer {
 	constructor(private readonly transformer: TsJestTransformer = tsJest.createTransformer()) {
 	}
-	private compile(sourceText: string, filepathBase: string, options: TransformOptions): string {
-		writeFileSync(filepathBase + '.ts', sourceText);
+	private compile(sourceText: string, dir: string, options: TransformOptions): string {
+		const filename = generateRandomFile(dir, 'ts');
+		writeFileSync(filename, sourceText);
 		try {
-			const compiled = this.transformer.process(sourceText, filepathBase + '.ts', options);
-			const js = (typeof compiled === 'string' ? compiled : compiled.code);
-			return js;
+			const compiled = this.transformer.process(sourceText, filename, options);
+			return (typeof compiled === 'string' ? compiled : compiled.code);
 		} catch(e) {
 			throw e;
 		} finally {
-			unlinkSync(filepathBase + '.ts');
+			unlinkSync(filename);
 		}
 	}
 	process(sourceText: string, sourcePath: Config.Path, options: TransformOptions): TransformedSource {
-		const childPathBase = `${sourcePath.replace(/\.ts$/, '')}_child`;
+		const dir = dirname(sourcePath);
 		const { header: sourceHeader, body: sourceBody } = splitSource(sourceText);
 		const childSrcTS = CHILD_SRC
 			.replace(WORKER_HEADER_PATTERN, sourceHeader)
 			.replace(WORKER_CODE_PATTERN, sourceBody);
-		const childSrc = this.compile(childSrcTS, childPathBase, options);
+		const childSrc = this.compile(childSrcTS, dir, options);
 		//console.log('childSrc:', childSrc);
-		const parentPathBase = `${sourcePath.replace(/\.ts$/, '')}_parent`;
 		const parentSrcTS = PARENT_SRC
 			.replace(WORKER_DIR_PATTERN, dirname(sourcePath))
 			.replace(WORKER_COMPILED_CODE_PATTERN, Buffer.from(childSrc).toString('base64'));
-		const parentSrc = this.compile(parentSrcTS, parentPathBase, options);
+		const parentSrc = this.compile(parentSrcTS, dir, options);
 		//console.log('parentSrc:', parentSrc);
 		return parentSrc;
 	}

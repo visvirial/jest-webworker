@@ -2,7 +2,7 @@
 import { unlinkSync } from 'fs';
 import { TransferListItem, parentPort } from 'worker_threads';
 
-@@WORKER_HEADERS@@
+/* __WORKER_HEADERS__ */
 
 unlinkSync(__filename);
 
@@ -47,7 +47,7 @@ export default class ChildWorker {
 		const postMessage = this.postMessage;
 		let onmessage: ListenerFunction | null = null;
 		
-@@WORKER_CODE@@
+/* __WORKER_CODE__ */
 		
 		this.addEventListener('message', (ev) => {
 			if(onmessage) {

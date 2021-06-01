@@ -1,7 +1,7 @@
 
 import { cpus } from 'os';
 
-/* @@JEST_WEBWORKER_SEPARATOR@@ */
+/* __JEST_WEBWORKER_SEPARATOR__ */
 
 self.postMessage(cpus().length);
 
